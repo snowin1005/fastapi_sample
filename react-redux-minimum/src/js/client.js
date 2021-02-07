@@ -1,41 +1,32 @@
-import { combineReducers, createStore } from "redux";
+import { applyMiddleware, createStore } from "redux";
 
-const userReducer = (state = {}, action) => {
+const reducer = (state = 0, action) => {
     switch (action.type) {
-        case "CHANGE_NAME":
-            state = { ...state, name: action.payload };
+        case "INC":
+            state = state + 1;
             break;
-        case "CHANGE_AGE":
-            state = { ...state, age: action.payload };
-            break;
-    }
-    return state;
-}
-const tweetReducer = (state = [], action) => {
-    switch (action.type) {
-        case "ADD_TWEET":
-            state = state.concat({ id: Date.now(), text: action.payload });
+        case "DEC":
+            state = state - 1;
             break;
     }
     return state;
 }
 
-const reducers = combineReducers({
-    user: userReducer,
-    tweets: tweetReducer
-});
+const logger = (store) => (next) => (action) => {
+    console.log("action fired", action);
+    console.log("next", typeof (next));
+    action.type = "DEC";
+    next(action);
+}
+const middleware = applyMiddleware(logger);
 
-// const store = createStore(reducer, { user: { name: "Tsutomu", age: 35 }, twhits: [] });
-const store = createStore(reducers);
+const store = createStore(reducer, 1, middleware);
 
 store.subscribe(() => {
     console.log("store changed", store.getState());
 });
 
-// store.dispatch({ type: "FOO", payload: "BAR" });
-store.dispatch({ type: "CHANGE_NAME", payload: "Tsutomu" });
-store.dispatch({ type: "CHANGE_AGE", payload: "35" });
-store.dispatch({ type: "CHANGE_AGE", payload: "36" });
-store.dispatch({ type: "ADD_TWEET", payload: "OMG LIKE LOL" });
-store.dispatch({ type: "ADD_TWEET", payload: "I am so like seriously like totally like right now" });
-
+store.dispatch({ type: "INC" });
+store.dispatch({ type: "INC" });
+store.dispatch({ type: "DEC" });
+store.dispatch({ type: "DEC" });
