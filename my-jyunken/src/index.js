@@ -1,36 +1,115 @@
-import React from 'react';
+import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types'
 import './index.css';
 import reportWebVitals from './reportWebVitals';
 
-const MoneyBook = () => {
-  const books = [
-    { date: "1/1", item: "お年玉", amount: 10000 },
-    { date: "1/3", item: "ケーキ", amount: -500 },
-    { date: "2/1", item: "小遣い", amount: 3000 },
-    { date: "2/5", item: "マンガ", amount: -600 }
-  ]
+class MoneyBook extends Component {
+  constructor(props) {
+    super(props)
+    this.state = { books: [] }
+
+  }
+
+  componentDidMount() {
+    this.setState({
+      books: [
+        { date: "1/1", item: "お年玉", amount: 10000 },
+        { date: "1/3", item: "ケーキ", amount: -500 },
+        { date: "2/1", item: "小遣い", amount: 3000 },
+        { date: "2/5", item: "マンガ", amount: -600 }
+      ]
+    })
+  }
+
+  addBooks(date, item, amount) {
+    const book = { date: date, item: item, amount: amount }
+    this.setState({ books: this.state.books.concat(book) })
+  }
+
+  render() {
+    return (
+      <div>
+        <Title>小遣い帳</Title>
+        <MoneyBookList books={this.state.books} />
+        <MoneyEntry add={(data, item, amount) => this.addBooks(data, item, amount)} />
+      </div>
+    )
+  }
+}
+
+class MoneyEntry extends Component {
+  constructor(props) {
+    super(props)
+    this.state = { date: '', item: '', amount: '', payingIn: true }
+  }
+
+  onChangeDate(event) {
+    this.setState({ date: event.target.value })
+  }
+
+  onChangeItem(event) {
+    this.setState({ date: event.target.value })
+  }
+
+  onChangeAmount(event) {
+    this.setState({ date: event.target.value })
+  }
+
+  onChangePayingIn(event) {
+    this.setState({ date: event.target.value })
+  }
+
+  onClickSubmit() {
+    this.props.add(this.state.date, this.state.item, this.state.amount * (this.state.payingIn ? 1 : -1))
+    this.state = { date: '', item: '', amount: '', payingIn: false }
+  }
+
+  render() {
+    return (
+      <div className="entry">
+        <fieldset>
+          <legend>記帳</legend>
+          <div>
+            <input type="radio" value="on" checked={this.state.payingIn} onChange={(event) => this.onChangePayingIn(event)} />入金
+            <input type="radio" value="off" checked={!this.state.payingIn} onChange={(event) => this.onChangePayingIn(event)} />入金
+            <div>日付：<input type="text" value={this.state.date} onChange={(event) => this.onChangeDate(event)} placeholder="3/15" /> </div>
+            <div>項目：<input type="text" value={this.state.item} onChange={(event) => this.onChangeItem(event)} placeholder="お小遣い" /> </div>
+            <div>金額：<input type="text" value={this.state.amount} onChange={(event) => this.onChangeAmount(event)} placeholder="1000" /> </div>
+            <div> <input type="submit" value="追加" onClick={(event) => this.onClickSubmit()} /> </div>
+          </div>
+        </fieldset>
+      </div >
+    )
+  }
+}
+
+MoneyEntry.prototypes = {
+  add: PropTypes.func.isRequired
+}
+
+const MoneyBookList = (props) => {
   return (
     <div>
-      <h1>小遣い帳</h1>
       <table className="book">
         <thead>
           <tr><th>日付</th><th>項目</th><th>入金</th><th>出金</th></tr>
         </thead>
         <tbody>
-          <MoneyBookItem books={books[0]} />
-          <MoneyBookItem books={books[1]} />
-          <MoneyBookItem books={books[2]} />
-          <MoneyBookItem books={books[3]} />
+          {props.books.map((book) =>
+            <MoneyBookItem book={book} key={book.date + book.item} />)}
         </tbody>
       </table>
     </div>
   )
 }
 
+MoneyBookList.prototype = {
+  book: PropTypes.array.isRequired
+}
+
 const MoneyBookItem = (props) => {
-  const { date, item, amount } = props.books
+  const { date, item, amount } = props.book
   return (
     <tr>
       <td>{date}</td>
@@ -43,6 +122,14 @@ const MoneyBookItem = (props) => {
 
 MoneyBookItem.prototype = {
   book: PropTypes.object.isRequired
+}
+
+const Title = (props) => {
+  return (<h1>{props.children}</h1>)
+}
+
+Title.prototype = {
+  children: PropTypes.string
 }
 
 ReactDOM.render(
